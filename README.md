@@ -7,7 +7,7 @@ var id = config.get('id');
 ```
   
 # Why aws-lambda-configuration  
-- Save you time to create dynamoDB table, write database I/O functions every project.  
+- Save you time for creating dynamoDB table, writing database I/O functions for every project.  
 - Internal cache mechanism improves access time 2-10 times faster 
   
 # Preparation  
@@ -40,23 +40,14 @@ You are expected to see the result:
 JavaScript (TypeScript): [aws-lambda-configuration-js](https://github.com/tonyliu7870/aws-lambda-configuration-js)  
 Python: In future  
   
-# AWS statistics
-Memory  
-AWS Lambda basic memory usage: ~34MB (empty code, default aws-sdk library)  
-  
-Time  
-AWS Lambda invoke time: 50ms~100ms (included both call & return)  
-AWS Lambda cold start time: <50ms  
-AWS DynamoDB simple query: ~1200ms (single document, directly get by key)  
-  
 # aws-lambda-configuration Performance
-Memory Usage
+Memory Usage  
 37MB + amount of cache  
   
 Time (for a string config: "sampleValue")  
-Cold Start + No cache: ~2700ms  
-Warm + Without cache: 400ms~600ms  
-With cache: 50ms~200ms  
+Cold Start + No cache: \~2700ms  
+Warm + Without cache: 400ms\~600ms  
+With cache: 50ms\~200ms  
   
 # Best Practices
 - Table Naming:  
@@ -73,3 +64,15 @@ With cache: 50ms~200ms
     - Read **static** config outside the API handler, e.g. initializer, global variable, etc. to reduce unnecessary lambda invoke.  
 - Security:  
     - Encrypt the sensitive data yourself.  
+  
+# Development Plan  
+1st Tier:  
+- encrypt/decrypt helper functions in library(s)  
+- command line tools for managing configurations  
+  
+2nd Tier:  
+- Python library  
+
+(Maybe) 3nd Tier:
+- Java library
+- C# library
