@@ -44,9 +44,9 @@ Python: In future
 Memory Usage  
 37MB + amount of cache  
   
-Time (for a string config: "sampleValue")  
+Time (for getting a string config: "sampleValue")  
 Cold Start + No cache: \~2700ms  
-Warm + Without cache: 400ms\~600ms  
+Warm + Without cache: 400ms\~1200ms  
 With cache: 50ms\~200ms  
   
 # Best Practices
@@ -67,6 +67,7 @@ With cache: 50ms\~200ms
   
 # Development Plan  
 1st Tier:  
+- aws-lambda-configuration-core test
 - encrypt/decrypt helper functions in library(s)  
 - command line tools for managing configurations  
   
