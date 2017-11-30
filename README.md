@@ -79,18 +79,20 @@ With cache: 50ms\~200ms
 With cache & Very frequent access: 40ms\~80ms  
   
 # Best Practices
+- Cache Related:  
+    - Use cache mechanism, get(), for config that are \[relatively stable & frequently get & short period of fault tolerant\], e.g. global server settings, cors settings, 3 parties credentials settings, etc.  
+    - Otherwise, use direct way, getDirect().  
 - Table Naming:  
     - Use tableName separates development stages, e.g. `lambda-configurations-dev`, `lambda-configurations-stage`, `lambda-configurations-prod`  
     - Use tableName separates projects, e.g. `projectA-configurations-dev`, `projectB-configurations-prod`  
-    So that your project's settings will not be accidentally modified by some newer of this library using the same AWS company account  
+  So that your project's settings will not be accidentally modified by some newer of this library using the same AWS company account  
 - Document Naming:  
     - Use standard documentName, e.g. `settings` for normal server settings (ids, name, domain, etc.) and `secrets` for sensitive settings (tokens, server credentials, keys, etc.)  
     - Use 1 document for 1 unit (user/device/account/etc), i.e. use documentName separates users' settings, e.g. a uuid/v4 string. Make sure you don't have a user called `settings` or `secrets`  
 - Read/Write Configuration:  
     - If you need to read/write only 1 config, set `key: PATH_TO_SUB_OBJECT` to reduce transfer payload size.  
-    - If you need to read/write multiple config, leave `key: undefined` to get/set the whole document to reduce multiple invoke times.  
-    - Use `noCache: true` to get config that you may modify without using the core (e.g. you are keeping trial & error to develop the program).  
-    - Read **static** config outside the API handler, e.g. initializer, global variable, etc. to reduce unnecessary lambda invoke.  
+    - If you need to read/write multiple config, leave `key: undefined` to get/set the whole document to reduce multiple invoke times.   
+    - Read **static** config outside the API handler, e.g. initializer, global variable, etc. to reduce repeated lambda invoke.  
 - Security:  
     - Encrypt the sensitive data using library's functions: encrypt/encryptKEK.  
   
