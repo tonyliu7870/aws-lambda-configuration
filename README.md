@@ -51,9 +51,10 @@ You may skip the core if you sure you DO NOT want to use the cache mechanism. E.
   
 ## Preparation III (Encryption Key)  
 You may skip this part if you DO NOT want to use encryption related functions.  
-Go To [AWS IAM](https://console.aws.amazon.com/iam/home) -> Encryption keys -> Choose the region -> Create Key -> Input **Alias** (recommend: **lambda-configuration-key**) and Choose **KMS** for **Key Material Origin** -> Next Step x N -> Finish.  
+
+1. Go To [AWS IAM](https://console.aws.amazon.com/iam/home) -> Encryption keys -> Choose the region -> Create Key -> Input **Alias** (recommend: **lambda-configuration-key**) and Choose **KMS** for **Key Material Origin** -> Next Step x N -> Finish.  
   
-Choose your created key -> Under Key Policy/Key Users -> Add ALL lambda execution roles that will use the encryption functions -> Save Changes  
+2. Choose your created key -> Under Key Policy/Key Users -> Add ALL lambda execution roles that will use the encryption functions -> Save Changes  
   
 ## Configuration Standard  
 aws-lambda-configuration use DynamoDB as storage. If you installed the core, there will be a dynamoDB table for you. If not, you need to prepare at least one table according to the standard.  
