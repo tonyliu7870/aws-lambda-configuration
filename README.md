@@ -39,7 +39,7 @@ You are expected to see the result:
 You may skip the core if you sure you DO NOT want to use the cache mechanism. E.g., you just want a dynamoDB wrapper to access your configurations.  
 
 1. Intall the configuration core: [aws-lambda-configuration-core](https://github.com/tonyliu7870/aws-lambda-configuration-core)  
-2. \[optional\] Go to your [AWS DynamoDB Console](https://console.aws.amazon.com/dynamodb/home). Find your configuration table. Create a new item: 
+2. \[optional, for testing only\] Go to your [AWS DynamoDB Console](https://console.aws.amazon.com/dynamodb/home). Find your configuration table. Create a new item: 
 ```
 {  
     "configName": "settings",  
@@ -49,8 +49,14 @@ You may skip the core if you sure you DO NOT want to use the cache mechanism. E.
 }  
 ```
   
+## Preparation III (Encryption Key)  
+You may skip this part if you DO NOT want to use encryption related functions.  
+Go To [AWS IAM](https://console.aws.amazon.com/iam/home) -> Encryption keys -> Choose the region -> Create Key -> Input **Alias** (recommend: **lambda-configuration-key**) and Choose **KMS** for **Key Material Origin** -> Next Step x N -> Finish.  
+  
+Choose your created key -> Under Key Policy/Key Users -> Add ALL lambda execution roles that will use the encryption functions -> Save Changes  
+  
 ## Configuration Standard  
-aws-lambda-configuration use DynamoDB as storage.  
+aws-lambda-configuration use DynamoDB as storage. If you installed the core, there will be a dynamoDB table for you. If not, you need to prepare at least one table according to the standard.  
 The table name (default: lambda-configurations) and item name (default: settings) is arbitrary and configurable.  
 The only requirement is the table MUST use a Primary partition key named **configName** (*String*).  
 Each config has the format:  
