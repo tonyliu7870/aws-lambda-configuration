@@ -1,4 +1,4 @@
-# What to do with aws-lambda-configuration  
+## What to do with aws-lambda-configuration  
 - Maintain dynamic configuration. Using environment variable in lambda is in-flexible and hard to maintain.
 - Read/Write/Delete configurations **across** lambda functions. Similar to what you did locally:  
 ```
@@ -6,16 +6,16 @@ var config = require('config');
 var id = config.get('id');  
 ```
   
-# Why aws-lambda-configuration  
+## Why aws-lambda-configuration  
 - Save you time for creating dynamoDB table, writing database I/O functions for every project.  
 - Internal cache mechanism improves access time 2-10 times faster than directly get from DynamoDB.  
 - A standardized way to access configuration.  
 - A trade-off solution between performance and running cost (propagation delay & access time vs running cost of professional configuration system)
   
-# Cons  
+## Cons  
 - You need to accept a period of propagation delay after updating a config **IF** you use the cache mechanism to speed up access time (default expire time 300s)  
   
-# Preparation I (AWS Account & Key)  
+## Preparation I (AWS Account & Key)  
 You may skip this part if you already have and would like to keep using that access key/secret key.
 
 1. Prepare an AWS account (Free Tier **SHOULD** cover this service's costs, ref: [AWS Free](https://aws.amazon.com/free/))  
@@ -35,8 +35,8 @@ You are expected to see the result:
 }  
 ```
   
-# Preparation II (Core)  
-You may even skip the core if you sure you DO NOT want to use the cache mechanism. You just want a dynamoDB wrapper to access your configurations.  
+## Preparation II (Core)  
+You may skip the core if you sure you DO NOT want to use the cache mechanism. E.g., you just want a dynamoDB wrapper to access your configurations.  
 
 1. Intall the configuration core: [aws-lambda-configuration-core](https://github.com/tonyliu7870/aws-lambda-configuration-core)  
 2. \[optional\] Go to your [AWS DynamoDB Console](https://console.aws.amazon.com/dynamodb/home). Find your configuration table. Create a new item: 
@@ -49,10 +49,19 @@ You may even skip the core if you sure you DO NOT want to use the cache mechanis
 }  
 ```
   
-# Configuration Standard  
-aws-lambda-configuration use DynamoDB as storage. The table name (default: lambda-configurations) and item name (default: settings) is arbitrary and configurable.  The only requirement is the table MUST use a Primary partition key named **configName** (*String*).  
+## Configuration Standard  
+aws-lambda-configuration use DynamoDB as storage.  
+The table name (default: lambda-configurations) and item name (default: settings) is arbitrary and configurable.  
+The only requirement is the table MUST use a Primary partition key named **configName** (*String*).  
+Each config has the format:  
+```
+{
+    "configName": string,
+    "data": any(prefer object),
+}
+```
   
-# Use aws-lambda-configuration  
+## Use aws-lambda-configuration  
 There are few ways for you to interact with your configurations.  
 
 1. Manually access via AWS Console  
@@ -64,28 +73,18 @@ There are few ways for you to interact with your configurations.
 3. Programmatic access via library  
     Install the library/module to your serverless project.  
   
-# Library List
+## Library List
 JavaScript (TypeScript): [aws-lambda-configuration-js](https://github.com/tonyliu7870/aws-lambda-configuration-js)  
 Python: In future  
   
-# aws-lambda-configuration Performance
-Memory Usage  
-37MB + amount of cache  
-  
-Time (for getting a string config: "sampleValue")  
-Cold Start + No cache: \~2700ms  
-Warm + Without cache: 400ms\~1200ms  
-With cache: 50ms\~200ms  
-With cache & Very frequent access: 40ms\~80ms  
-  
-# Best Practices
+## Best Practices
 - Cache Related:  
-    - Use cache mechanism, get(), for config that are \[relatively stable & frequently get & short period of fault tolerant\], e.g. global server settings, cors settings, 3 parties credentials settings, etc.  
-    - Otherwise, use direct way, getDirect().  
+    - Use cache mechanism, get(), for config that are \[relatively stable & frequently get & allow short period of fault tolerant\], e.g. global server settings, cors settings, 3 parties credentials settings, etc.  
+    - Otherwise, use direct way, get({ mode: direct }).  
 - Table Naming:  
     - Use tableName separates development stages, e.g. `lambda-configurations-dev`, `lambda-configurations-stage`, `lambda-configurations-prod`  
     - Use tableName separates projects, e.g. `projectA-configurations-dev`, `projectB-configurations-prod`  
-  So that your project's settings will not be accidentally modified by some newer of this library using the same AWS company account  
+    So that your project's settings will not be accidentally modified by some newer of this library using the same AWS account  
 - Document Naming:  
     - Use standard documentName, e.g. `settings` for normal server settings (ids, name, domain, etc.) and `secrets` for sensitive settings (tokens, server credentials, keys, etc.)  
     - Use 1 document for 1 unit (user/device/account/etc), i.e. use documentName separates users' settings, e.g. a uuid/v4 string. Make sure you don't have a user called `settings` or `secrets`  
@@ -96,7 +95,7 @@ With cache & Very frequent access: 40ms\~80ms
 - Security:  
     - Encrypt the sensitive data using library's functions: encrypt/encryptKEK.  
   
-# Policy Sample (To be confirm)  
+## Policy Sample (To be confirm)  
 ```
 {
     "Version": "2012-10-17",
@@ -116,8 +115,18 @@ With cache & Very frequent access: 40ms\~80ms
     ]
 }
 ```
+  
+## aws-lambda-configuration Performance
+Memory Usage  
+37MB + amount of cache  
+  
+Time (for getting a string config: "sampleValue")  
+Cold Start + No cache: \~2700ms  
+Warm + Without cache: 400ms\~1200ms  
+With cache: 50ms\~200ms  
+With cache & Very frequent access: 40ms\~80ms  
 
-# Development Plan  
+## Development Plan  
 1st Tier:  
 - aws-lambda-configuration-core test 
 - command line tools for managing configurations  
