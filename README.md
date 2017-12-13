@@ -1,4 +1,4 @@
-## What to do with aws-lambda-configuration  
+## What to do with aws-lambda-configuration (Problem to solve)  
 - Maintain dynamic configuration. Using environment variable in lambda is in-flexible and hard to maintain.
 - Read/Write/Delete configurations **across** lambda functions. Similar to what you did locally:  
 ```
@@ -8,12 +8,12 @@ var id = config.get('id');
   
 ## Why aws-lambda-configuration  
 - Save you time for creating dynamoDB table, writing database I/O functions for every project.  
-- Internal cache mechanism improves access time 2-10 times faster than directly get from DynamoDB.  
-- A standardized way to access configuration.  
-- A trade-off solution between performance and running cost (propagation delay & access time vs running cost of professional configuration system)
+- Internal cache mechanism reduce redundant database access, hence lower dynamoDB capacity and lower cost.  
+- A standardized way to access/manage/store configuration.  
+- A trade-off solution between performance and running cost (propagation delay & access time & cheap lambda execution cost vs high dynamoDB capacity vs running cost of professional configuration system)  
   
 ## Cons  
-- You need to accept a period of propagation delay after updating a config **IF** you use the cache mechanism to speed up access time (default expire time 300s)  
+- You need to accept a period of propagation delay after updating a config **IF** you use the cache mechanism to save dynamoDB access cost (default expire time 300s)  
   
 ## Preparation I (AWS Account & Key)  
 You may skip this part if you already have and would like to keep using that access key/secret key.
@@ -22,7 +22,7 @@ You may skip this part if you already have and would like to keep using that acc
 2. \[Optional\] Create a machine user at [AWS IAM](https://console.aws.amazon.com/iam/home). Create User -> Tick Programmatic access -> Attach existing policies directly ->  
     2.a Choose the AdministratorAccess **or**  
     2.b Create Policy -> JSON -> Copy the Policy Sample at the end of this readme -> Review Policy -> Create Policy  
-3. Prepare an set of credential (1 access key + 1 secret key), either from step 2 or crate a key for your user. (ref: [AWS - Managing Access Keys for Your AWS Account](http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html))  
+3. Prepare an set of credential (1 access key + 1 secret key), either from step 2 or create a key for your user. (ref: [AWS - Managing Access Keys for Your AWS Account](http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html))  
 4. Set up the aws-cli credential environment (ref: [AWS Configuration and Credential Files](http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html)).    
 5. \[Optional\] Test your credentials setting with aws-cli (ref: [AWS STS - get-caller-identity](https://docs.aws.amazon.com/cli/latest/reference/sts/get-caller-identity.html))  
 `aws sts get-caller-identity`  
@@ -38,7 +38,7 @@ You are expected to see the result:
 ## Preparation II (Core)  
 You may skip the core if you sure you DO NOT want to use the cache mechanism. E.g., you just want a dynamoDB wrapper to access your configurations.  
 
-1. Intall the configuration core: [aws-lambda-configuration-core](https://github.com/tonyliu7870/aws-lambda-configuration-core)  
+1. Install the configuration core: [aws-lambda-configuration-core](https://github.com/tonyliu7870/aws-lambda-configuration-core)  
 2. \[optional, for testing only\] Go to your [AWS DynamoDB Console](https://console.aws.amazon.com/dynamodb/home). Find your configuration table. Create a new item: 
 ```
 {  
@@ -57,10 +57,10 @@ You may skip this part if you DO NOT want to use encryption related functions.
 2. Choose your created key -> Under Key Policy/Key Users -> Add ALL lambda execution roles that will use the encryption functions -> Save Changes  
   
 ## Configuration Standard  
-aws-lambda-configuration use DynamoDB as storage. If you installed the core, there will be a dynamoDB table for you. If not, you need to prepare at least one table according to the standard.  
-The table name (default: lambda-configurations) and item name (default: settings) is arbitrary and configurable.  
-The only requirement is the table MUST use a Primary partition key named **configName** (*String*).  
-Each config has the format:  
+aws-lambda-configuration use DynamoDB as storage. If you installed the core, there will be a dynamoDB table for you. If not, you need to prepare at least one table according to the following standard.  
+- The table name (default: lambda-configurations) and item name (default: settings) is arbitrary and configurable.  
+- The only requirement is the table MUST use a Primary partition key named **configName** (*String*).  
+- Each config has the format:  
 ```
 {
     "configName": string,
@@ -85,9 +85,10 @@ JavaScript (TypeScript): [aws-lambda-configuration-js](https://github.com/tonyli
 Python: In future  
   
 ## Best Practices
-- Cache Related:  
-    - Use cache mechanism, get(), for config that are \[relatively stable & frequently get & allow short period of fault tolerant\], e.g. global server settings, cors settings, 3 parties credentials settings, etc.  
-    - Otherwise, use direct way, get({ mode: direct }).  
+- Cache vs Core vs Direct:  
+    - Use cache mechanism, get({ mode: 'cache' }), for config that are \[relatively stable & frequently get & allow short period of fault tolerant\], e.g. global server settings, cors settings, 3 parties credentials settings, etc.  
+    - Use core, get({ mode: 'core' }), if you want to isolate permission, e.g. your lambda execution role only need `lambda:InvokeFunction` but not `dynamo:*`.  
+    - Otherwise, use direct way, get().  
 - Table Naming:  
     - Use tableName separates development stages, e.g. `lambda-configurations-dev`, `lambda-configurations-stage`, `lambda-configurations-prod`  
     - Use tableName separates projects, e.g. `projectA-configurations-dev`, `projectB-configurations-prod`  
@@ -132,15 +133,16 @@ Cold Start + No cache: \~2700ms
 Warm + Without cache: 400ms\~1200ms  
 With cache: 50ms\~200ms  
 With cache & Very frequent access: 40ms\~80ms  
-
+Direct access from library: 10ms\~70ms  
+  
 ## Development Plan  
 1st Tier:  
-- aws-lambda-configuration-core test 
 - command line tools for managing configurations  
   
 2nd Tier:  
 - Python library  
-
-(Maybe) 3nd Tier:
-- Java library
-- C# library
+  
+(Maybe) 3nd Tier:  
+- Java library  
+- C# library  
+ 
