@@ -134,15 +134,3 @@ Warm + Without cache: 400ms\~1200ms
 With cache: 50ms\~200ms  
 With cache & Very frequent access: 40ms\~80ms  
 Direct access from library: 10ms\~70ms  
-  
-## Development Plan  
-1st Tier:  
-- command line tools for managing configurations  
-  
-2nd Tier:  
-- Python library  
-  
-(Maybe) 3nd Tier:  
-- Java library  
-- C# library  
- 
